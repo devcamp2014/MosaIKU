@@ -1,5 +1,5 @@
 CXX      = g++
-CFLG     = 
+CFLAGS   = -Wall -O2
 INCLUDES =
 LIBS     = -L/usr/lib/x86_64-linux-gnu/ -lopencv_core -lopencv_highgui 
 TARGET   = mudou
