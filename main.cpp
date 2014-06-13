@@ -5,6 +5,9 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#include "ImageLoader.h"
+#include "ImageCacheManager.h"
+
 typedef std::vector<cv::Point3f> color_list_t;
 
 std::string get_split_img_name(int cnt) {
@@ -65,6 +68,8 @@ void resize_and_copy(cv::Mat dst, cv::Mat src, int px, int py, float w, float h)
 
 cv::Mat create_tiled_img(int cnt, const color_list_t& color_list) {
 
+  ImageCacheManager<cv::Mat, ImageLoader> icm;
+
   cv::Mat src_img = cv::imread(get_split_img_name(cnt), 1);
   //  if(src_img.empty()) return; 
 
@@ -110,8 +115,11 @@ cv::Mat create_tiled_img(int cnt, const color_list_t& color_list) {
       }
 
       // 一番色が違い画像の貼りつけ
-      cv::Mat img = cv::imread(get_split_img_name(min_index), 1);
-      resize_and_copy(dst_img, img, bx, by, ex-bx, ey-by);
+      int w = ex-bx;
+      int h = ey-by;
+      icm.
+        load(get_split_img_name(min_index), w, h).
+        copyTo(dst_img(cv::Rect(bx, by, w, h)));
     }
   }
 
