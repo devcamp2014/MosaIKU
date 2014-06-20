@@ -14,31 +14,6 @@
 ImageCacheManager<cv::Mat, ImageLoader> icm;
 NearImageManager nim;
 
-std::string get_split_img_name(int cnt) {
-  char name[255];
-  sprintf(name, "ret_%04d.png", cnt);
-  return name;
-}
-
-void split_video(const std::string& videoname) {
-
-  cv::VideoCapture in_video;
-  cv::Mat image;
-
-  in_video.open(videoname);
-
-  int cnt = 0;
-  in_video >> image;
-  while(!image.empty()) {
-
-    // output img
-    cv::imwrite(get_split_img_name(cnt), image);
-
-    in_video >> image;
-    cnt++;
-  }
-}
-
 void resize_and_copy(cv::Mat dst, cv::Mat src, int px, int py, float w, float h) {
 
   cv::Mat src_resize(w, h, src.type());
@@ -47,11 +22,7 @@ void resize_and_copy(cv::Mat dst, cv::Mat src, int px, int py, float w, float h)
   src_resize.copyTo(dst(cv::Rect(px, py, w, h)));
 }
 
-cv::Mat create_tiled_img(int cnt) {
-
-
-  cv::Mat src_img = cv::imread(get_split_img_name(cnt), 1);
-  //  if(src_img.empty()) return; 
+cv::Mat create_tiled_img(cv::Mat src_img) {
 
   cv::Mat dst_img = cv::Mat::zeros(src_img.rows, src_img.cols, src_img.type());
 
@@ -97,16 +68,33 @@ cv::Mat create_tiled_img(int cnt) {
   return dst_img;
 }
 
+void video_real2escape(const std::string& videoname) {
+  cv::VideoCapture in_video;
+  cv::Mat image;
+
+  in_video.open(videoname);
+
+  int cnt = 0;
+  in_video >> image;
+  while(!image.empty()) {
+
+    char name[255];
+    sprintf(name, "ret/es_%04d.png", cnt);
+    cv::imwrite(name, create_tiled_img(image));
+    
+    in_video >> image;
+    cnt++;
+  }
+
+}
+
 int main(int argc, char *argv[]) {
   
   std::cout << "begin load image" << std::endl;
   nim.load("img");
 
-  std::cout << "begin split video" << std::endl;
-  split_video(argv[1]);
-
-  std::cout << "begin tiled img" << std::endl;
-  cv::imwrite("ret_xx.png", create_tiled_img(0));
-
+  std::cout << "begin real2escape" << std::endl;
+  video_real2escape(argv[1]);
+  
   return 0;
 }
