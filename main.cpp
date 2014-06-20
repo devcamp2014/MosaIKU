@@ -2,13 +2,17 @@
 #include <vector>
 #include <string>
 
+#include <boost/filesystem.hpp>
+
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
 #include "ImageLoader.h"
+#include "NearImageManager.h"
 #include "ImageCacheManager.h"
 
-typedef std::vector<cv::Point3f> color_list_t;
+ImageCacheManager<cv::Mat, ImageLoader> icm;
+NearImageManager nim;
 
 std::string get_split_img_name(int cnt) {
   char name[255];
@@ -16,7 +20,7 @@ std::string get_split_img_name(int cnt) {
   return name;
 }
 
-void split_video(const std::string& videoname, color_list_t& color_list) {
+void split_video(const std::string& videoname) {
 
   cv::VideoCapture in_video;
   cv::Mat image;
@@ -26,29 +30,6 @@ void split_video(const std::string& videoname, color_list_t& color_list) {
   int cnt = 0;
   in_video >> image;
   while(!image.empty()) {
-
-    // image info
-    // std::cout << image.rows << "," <<image.cols<<","<<image.step<<std::endl;
-
-    int es   = image.elemSize();
-    int step = image.step;
-    uint64_t r = 0;
-    uint64_t g = 0;
-    uint64_t b = 0;
-
-    // sum image pix
-    for(int y = 0 ; y < image.rows; y++){
-      for(int x = 0 ; x < image.cols; x++){
-        b += image.data[y * step + x * es + 0]; //b
-        g += image.data[y * step + x * es + 1]; //g
-        r += image.data[y * step + x * es + 2]; //r
-      }
-    }
-
-    // image avg
-    float pixsum = image.rows*image.cols;
-    cv::Point3f cp(b/pixsum, g/pixsum, r/pixsum);
-    color_list.push_back(cp);
 
     // output img
     cv::imwrite(get_split_img_name(cnt), image);
@@ -66,9 +47,8 @@ void resize_and_copy(cv::Mat dst, cv::Mat src, int px, int py, float w, float h)
   src_resize.copyTo(dst(cv::Rect(px, py, w, h)));
 }
 
-cv::Mat create_tiled_img(int cnt, const color_list_t& color_list) {
+cv::Mat create_tiled_img(int cnt) {
 
-  ImageCacheManager<cv::Mat, ImageLoader> icm;
 
   cv::Mat src_img = cv::imread(get_split_img_name(cnt), 1);
   //  if(src_img.empty()) return; 
@@ -77,8 +57,8 @@ cv::Mat create_tiled_img(int cnt, const color_list_t& color_list) {
 
   int es   = src_img.elemSize();
   int step = src_img.step;
-  int cell_width  = 10;
-  int cell_height = 10;
+  int cell_width  = 5;
+  int cell_height = 5;
 
   // 画像をセル単位に分割し、一番近い色の画像を貼りつける
   for(int by = 0 ; by < src_img.rows; by+=cell_height){
@@ -103,22 +83,13 @@ cv::Mat create_tiled_img(int cnt, const color_list_t& color_list) {
       cv::Point3f cp((float)b/pixsum, (float)g/pixsum, (float)r/pixsum);
 
       // 一番色が近い画像を求める
-      int min_len=std::numeric_limits<int>::max();
-      int min_index=0;
-      for(unsigned int i=0; i<color_list.size(); i++) {
-	const cv::Point3f& p = color_list[i];
-	int len = (p.x-cp.x)*(p.x-cp.x) + (p.y-cp.y)*(p.y-cp.y) + (p.z-cp.z)*(p.z-cp.z);
-	if(len < min_len) {
-	  min_index = i;
-	  min_len = len;
-	}
-      }
+      std::string near_imagename = nim.get_near_imagename(cp);
 
       // 一番色が違い画像の貼りつけ
       int w = ex-bx;
       int h = ey-by;
       icm.
-        load(get_split_img_name(min_index), w, h).
+        load(near_imagename, w, h).
         copyTo(dst_img(cv::Rect(bx, by, w, h)));
     }
   }
@@ -127,11 +98,15 @@ cv::Mat create_tiled_img(int cnt, const color_list_t& color_list) {
 }
 
 int main(int argc, char *argv[]) {
+  
+  std::cout << "begin load image" << std::endl;
+  nim.load("img");
 
-  color_list_t color_list;
-  split_video(argv[1], color_list);
+  std::cout << "begin split video" << std::endl;
+  split_video(argv[1]);
 
-  cv::imwrite("ret_xx.png", create_tiled_img(0, color_list));
+  std::cout << "begin tiled img" << std::endl;
+  cv::imwrite("ret_xx.png", create_tiled_img(0));
 
   return 0;
 }
