@@ -12,6 +12,13 @@ public:
   virtual ~NearImageManager() {
   }
 
+  void verify_image_files(const std::string& image_dir_path) {
+    fs::path dir(image_dir_path);
+    fs::directory_iterator end;
+    for(fs::directory_iterator it(dir); it!=end; ++it) {
+    }
+  }
+
   void load(const std::string& image_dir_path) {
     namespace fs = boost::filesystem;
 
@@ -51,7 +58,7 @@ public:
         }
       }
     }
-    std::cout << "end load" << std::endl;
+    //std::cout << "end load" << std::endl;
   }
 
   std::string get_near_imagename(color_t cp) {
@@ -67,6 +74,7 @@ private:
 
   typedef std::vector<ImageInfo> image_list_t;
   image_list_t image_list_;
+  ImageInfo dummy_image;
 
 #define COLOR_ARRAY_SIZE 10
   const int color_array_size = COLOR_ARRAY_SIZE;
@@ -85,7 +93,7 @@ private:
 
   ImageInfo& get_near_image_precise(color_t cp) {
     // 一番色が近い画像を求める
-    ImageInfo dummy_image;
+    //ImageInfo dummy_image;
     int min_len=std::numeric_limits<int>::max();
     ImageInfo& min_image = dummy_image;
 
