@@ -12,13 +12,6 @@ public:
   virtual ~NearImageManager() {
   }
 
-  void verify_image_files(const std::string& image_dir_path) {
-    fs::path dir(image_dir_path);
-    fs::directory_iterator end;
-    for(fs::directory_iterator it(dir); it!=end; ++it) {
-    }
-  }
-
   void load(const std::string& image_dir_path) {
     namespace fs = boost::filesystem;
 
