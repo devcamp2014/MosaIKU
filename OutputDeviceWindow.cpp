@@ -6,9 +6,6 @@
 #include "ImageLoader.h"
 #include "ImageCacheManager.h"
 
-ImageCacheManager<cv::Mat, ImageLoader> icm;
-NearImageManager nim;
-
 #include "TiledImageCreator.h"
 
 OutputDeviceWindow::OutputDeviceWindow() {
