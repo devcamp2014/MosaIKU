@@ -49,16 +49,16 @@ int main(int argc, char *argv[]) {
   cv::VideoCapture in_video;
   in_video.open(argv[1]);
 
-  // OutputDeviceWindow output_dev;  
-  // output_dev.output(in_video);
-
-  OutputDeviceVideo output_dev;  
+  OutputDeviceWindow output_dev;  
   output_dev.output(in_video);
 
+  //OutputDeviceVideo output_dev;  
+  //output_dev.output(in_video);
 
-  // cv::VideoCapture in_video;
-  // in_video.open(0);
-  // window_view(in_video);
+
+  //cv::VideoCapture in_video;
+  //in_video.open(0);
+  //window_view(in_video);
 
 
   return 0;
