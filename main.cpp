@@ -75,7 +75,6 @@ void video_real2escape(const std::string& videoname) {
 
   in_video.open(videoname);
 
-  int cnt = 0;
   in_video >> image;
 
   cv::VideoWriter out_video("out.avi", 
@@ -88,7 +87,32 @@ void video_real2escape(const std::string& videoname) {
     out_video << create_tiled_img(image);
     
     in_video >> image;
-    cnt++;
+  }
+}
+
+const std::string WIN_NAME = "mudou_win";
+const int KEYCODE_ESC = 0x1b;
+
+void window_view(const std::string& videoname) {
+  cv::VideoCapture in_video;
+  cv::Mat image;
+
+
+  cv::namedWindow(WIN_NAME);
+
+  in_video.open(videoname);
+
+  in_video >> image;
+  while(!image.empty()) {
+
+    cv::imshow(WIN_NAME, create_tiled_img(image));
+
+    int key = cv::waitKey(1);
+    if( key == KEYCODE_ESC ) {
+      break;
+    }
+
+    in_video >> image;
   }
 }
 
@@ -98,7 +122,8 @@ int main(int argc, char *argv[]) {
   nim.load("img");
 
   std::cout << "begin real2escape" << std::endl;
-  video_real2escape(argv[1]);
-  
+  //video_real2escape(argv[1]);
+  window_view(argv[1]);
+
   return 0;
 }
