@@ -5,7 +5,7 @@
 class ImageLoader {
 public:
   cv::Mat operator()(std::string name, int width, int height) {
-    //    std::cout << name << std::endl;
+    // std::cout << name << std::endl;
 
     cv::Mat orig_img = cv::imread(name, 1);
 
