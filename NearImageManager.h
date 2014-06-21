@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <boost/filesystem.hpp>
 
 typedef cv::Point3f color_t;
 
