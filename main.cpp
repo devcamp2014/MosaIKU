@@ -15,11 +15,36 @@ ImageCacheManager<cv::Mat, ImageLoader> icm;
 NearImageManager nim;
 
 void resize_and_copy(cv::Mat dst, cv::Mat src, int px, int py, float w, float h) {
-
   cv::Mat src_resize(w, h, src.type());
   cv::resize(src, src_resize, src_resize.size(), cv::INTER_CUBIC);
   
   src_resize.copyTo(dst(cv::Rect(px, py, w, h)));
+}
+
+void verify_image_files(const std::string& image_dir_path, const std::string& collapsed_image_dir_path) {
+  namespace fs = boost::filesystem;
+  int file_count = 0;
+
+  fs::path dir(image_dir_path);
+  fs::directory_iterator end;
+
+  std::cout << "verify start" << std::endl;
+  for(fs::directory_iterator it(dir); it!=end; ++it) {
+    try {
+      ImageLoader()(it->path().string(), 1, 1);
+    } catch(cv::Exception &e) {
+      // image may be collapsed...
+      std::string moveTo = collapsed_image_dir_path + "/" + it->path().filename().string();
+      std::cout << "collapsed image:" << it->path() << " moved to " << moveTo << std::endl;
+      rename(it->path(), moveTo);
+    }
+
+    file_count++;
+    if(file_count % 100 == 0){
+      std::cout << file_count << " files checked ..." << std::endl;
+    }
+  }
+  std::cout << "verify end" << std::endl;
 }
 
 cv::Mat create_tiled_img(cv::Mat src_img) {
@@ -117,7 +142,12 @@ void window_view(const std::string& videoname) {
 }
 
 int main(int argc, char *argv[]) {
-  
+  int verify = 0;  
+  if(verify) {
+    verify_image_files("img/","collapsed_img/");
+    return 0;
+  }
+
   std::cout << "begin load image" << std::endl;
   nim.load("img");
 
