@@ -3,6 +3,7 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -10,6 +11,8 @@
 #include "ImageLoader.h"
 #include "OutputDeviceWindow.h"
 #include "OutputDeviceVideo.h"
+
+using namespace boost::program_options;
 
 void verify_image_files(const std::string& image_dir_path, const std::string& collapsed_image_dir_path) {
   namespace fs = boost::filesystem;
@@ -38,28 +41,60 @@ void verify_image_files(const std::string& image_dir_path, const std::string& co
 }
 
 int main(int argc, char *argv[]) {
-  int verify = 0;  
-  if(verify) {
-    verify_image_files("img/","collapsed_img/");
-    return 0;
+
+  options_description opt("option");
+  opt.add_options()
+    ("help,h", "show this message")
+    ("verify,v", "verify image set")
+    ("input,i", value<std::string>(), "input device ('camera' or 'video' or 'image')")
+    ("output,o", value<std::string>(), "output ('window' or 'file')")
+    ("name", value<std::string>(), "filename");
+  
+  variables_map argmap;
+   try {
+
+    store(parse_command_line(argc, argv, opt), argmap);
+    notify(argmap);
+
+  } catch(...) {
+    std::cout << opt << std::endl;
+    return 1;
   }
 
-  std::cout << "begin real2escape" << std::endl;
+    if (argmap.count("help") ||
+        !argmap.count("input") ||
+        !argmap.count("output")) {
+      std::cout << opt << std::endl;
+      return 0;
+    } 
 
+    if(argmap.count("verify")) {
+      verify_image_files("img/","collapsed_img/");
+      return 0;
+    }
+
+    
+  std::string input = argmap["input"].as<std::string>();
   cv::VideoCapture in_video;
-  in_video.open(argv[1]);
+  if(input=="camera") {
+    in_video.open(0);
+  } else if(input=="video") {
+    std::string name = argmap["name"].as<std::string>();
+    if (!argmap.count("name")) {
+      std::cout << opt << std::endl;
+      return 0;
+    }
+    in_video.open(name);
+  }
 
-  // OutputDeviceWindow output_dev;  
-  // output_dev.output(in_video);
-
-  OutputDeviceVideo output_dev;  
-  output_dev.output(in_video);
-
-
-  // cv::VideoCapture in_video;
-  // in_video.open(0);
-  // window_view(in_video);
-
+  std::string output = argmap["output"].as<std::string>();
+  if(output=="window") {
+    OutputDeviceWindow output_dev;  
+    output_dev.output(in_video);
+  } else if(output=="file") {
+    OutputDeviceVideo output_dev;  
+    output_dev.output(in_video);
+  }
 
   return 0;
 }
