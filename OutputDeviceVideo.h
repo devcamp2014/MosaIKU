@@ -5,10 +5,10 @@
 #include "ImageLoader.h"
 #include "ImageCacheManager.h"
 
-class OutputDeviceWindow : public OutputDevice {
+class OutputDeviceVideo : public OutputDevice {
 public:
-  OutputDeviceWindow();
-  virtual ~OutputDeviceWindow();
+  OutputDeviceVideo();
+  virtual ~OutputDeviceVideo();
 
   void output(cv::VideoCapture& in_video);
 
