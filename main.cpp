@@ -28,8 +28,8 @@ cv::Mat create_tiled_img(cv::Mat src_img) {
 
   int es   = src_img.elemSize();
   int step = src_img.step;
-  int cell_width  = 5;
-  int cell_height = 5;
+  int cell_width  = 100;
+  int cell_height = 100;
 
   // 画像をセル単位に分割し、一番近い色の画像を貼りつける
   for(int by = 0 ; by < src_img.rows; by+=cell_height){
@@ -59,9 +59,10 @@ cv::Mat create_tiled_img(cv::Mat src_img) {
       // 一番色が違い画像の貼りつけ
       int w = ex-bx;
       int h = ey-by;
-      icm.
-        load(near_imagename, w, h).
-        copyTo(dst_img(cv::Rect(bx, by, w, h)));
+      //      std::cout << bx << "," << by << "," << w << "," << h << std::endl;
+
+      cv::Mat tile_img = icm.load(near_imagename, cell_width, cell_height);
+      tile_img(cv::Rect(0,0,w,h)).copyTo(dst_img(cv::Rect(bx, by, w, h)));
     }
   }
 
@@ -76,16 +77,19 @@ void video_real2escape(const std::string& videoname) {
 
   int cnt = 0;
   in_video >> image;
+
+  cv::VideoWriter out_video("out.avi", 
+                            CV_FOURCC('X','V','I','D'), 
+                            in_video.get(CV_CAP_PROP_FPS), 
+                            image.size());
+
   while(!image.empty()) {
 
-    char name[255];
-    sprintf(name, "ret/es_%04d.png", cnt);
-    cv::imwrite(name, create_tiled_img(image));
+    out_video << create_tiled_img(image);
     
     in_video >> image;
     cnt++;
   }
-
 }
 
 int main(int argc, char *argv[]) {
