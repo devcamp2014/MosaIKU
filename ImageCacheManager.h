@@ -27,6 +27,11 @@ public:
     
     return it->second;
   }
+  
+  void clear() {
+    image_map_.clear();
+  }
+
 private:
   struct ImageKey {
     ImageKey(std::string n, int w, int h) : 
