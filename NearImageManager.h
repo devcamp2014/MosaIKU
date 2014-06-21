@@ -96,8 +96,8 @@ private:
   image_list_t image_list_;
   ImageInfo dummy_image;
 
-  int select_mode = SELECT_MODE_RECYCLE;
-  int max_use_count = 2;
+  int select_mode = SELECT_MODE_USE_ONCE;
+  int max_use_count = 1;
 
 #define COLOR_ARRAY_SIZE 20
   const int color_array_size = COLOR_ARRAY_SIZE;
@@ -141,6 +141,7 @@ private:
       if(min_image == dummy_image) {
         min_image = get_near_unused_image(cp);
       }
+      min_image.used++;
     }
 
     return min_image;

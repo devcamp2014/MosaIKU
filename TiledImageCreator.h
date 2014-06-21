@@ -9,4 +9,5 @@
 
 cv::Mat create_tiled_img(cv::Mat src_img, NearImageManager& nim, ImageCacheManager<cv::Mat, ImageLoader>& icm);
 
-
+extern int cell_width;
+extern int cell_height;
