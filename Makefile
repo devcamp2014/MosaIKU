@@ -5,7 +5,7 @@ CXX      = g++
 RM       = rm
 
 CXXFLAGS = -Wall -O2 -std=c++0x
-LIBS     = -L/usr/lib/x86_64-linux-gnu/ -lopencv_core -lopencv_highgui -lopencv_imgproc -lboost_filesystem -lboost_system
+LIBS     = -lopencv_core -lopencv_highgui -lopencv_imgproc -lboost_filesystem -lboost_system
 TARGET   = mudou
 
 SRC      := $(wildcard *.cpp)
