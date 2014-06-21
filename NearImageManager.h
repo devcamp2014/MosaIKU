@@ -43,9 +43,10 @@ public:
 	for(int b=0; b<color_array_size; b++){
           int index = r + g * color_array_size + b * color_array_size_2;
           if(color_image_list_[index].size() <= 0) {
-            search_color.x = (int)(r / color_step);
-            search_color.y = (int)(g / color_step);
-            search_color.z = (int)(b / color_step);
+            // クラスタに画像が１つも無ければ一番色が近い画像を追加する
+            search_color.x = (int)((r + 0.5) / color_step);
+            search_color.y = (int)((g + 0.5) / color_step);
+            search_color.z = (int)((b + 0.5) / color_step);
 	    color_image_list_[index].push_back(get_near_image_precise(search_color));
           }
         }
@@ -76,17 +77,27 @@ private:
   image_list_t color_image_list_[(COLOR_ARRAY_SIZE * COLOR_ARRAY_SIZE * COLOR_ARRAY_SIZE)];
 
   ImageInfo &get_near_image(color_t cp) {
+    // クラスタの中で一番色が近い画像を求める
     int index = (int)(cp.x * color_step)
               + (int)(cp.y * color_step) * color_array_size
               + (int)(cp.z * color_step) * color_array_size_2;
+    int min_len=std::numeric_limits<int>::max();
+    ImageInfo& min_image = dummy_image;
 
-    // FIXME: return another image in vector
-    return color_image_list_[index].at(0);
+    for(ImageInfo& i : color_image_list_[index]) {
+      const color_t& p = i.color;
+      int len = (p.x-cp.x)*(p.x-cp.x) + (p.y-cp.y)*(p.y-cp.y) + (p.z-cp.z)*(p.z-cp.z);
+      if(len < min_len) {
+        min_image     = i;
+        min_len       = len;
+      }
+    }
+
+    return min_image;
   }
 
   ImageInfo& get_near_image_precise(color_t cp) {
     // 一番色が近い画像を求める
-    //ImageInfo dummy_image;
     int min_len=std::numeric_limits<int>::max();
     ImageInfo& min_image = dummy_image;
 
