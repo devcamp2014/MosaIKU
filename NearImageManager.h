@@ -24,6 +24,7 @@ public:
       ImageInfo ii;
       ii.imagename = it->path().string();
       ii.color     = mat2avgcolor(cv::imread(it->path().string(), 1));
+      ii.used      = 0;
 
       image_list_.push_back(ii);
 
@@ -60,17 +61,44 @@ public:
     return image.imagename;
   }
 
+  void reset_used_info() {
+    for(ImageInfo& i : image_list_) {
+      i.used = 0;
+    }
+  }
+
+#define SELECT_MODE_RECYCLE 0
+#define SELECT_MODE_USE_ONCE 1
+  void set_recycle_mode(int mode) {
+    if(mode){
+      select_mode = SELECT_MODE_RECYCLE;
+    }else{
+      select_mode = SELECT_MODE_USE_ONCE;
+    }
+  }
+  void set_max_use_count(int count) {
+    max_use_count = count;
+  }
+
 private:
   struct ImageInfo {
     color_t color;
     std::string imagename;
+    unsigned int used;
+  
+	bool operator==(const ImageInfo& rhs) const {
+		return color == rhs.color && imagename==imagename; 
+        }
   };
 
   typedef std::vector<ImageInfo> image_list_t;
   image_list_t image_list_;
   ImageInfo dummy_image;
 
-#define COLOR_ARRAY_SIZE 10
+  int select_mode = SELECT_MODE_RECYCLE;
+  int max_use_count = 2;
+
+#define COLOR_ARRAY_SIZE 20
   const int color_array_size = COLOR_ARRAY_SIZE;
   const int color_array_size_2 = (COLOR_ARRAY_SIZE * COLOR_ARRAY_SIZE);
   const float color_step = COLOR_ARRAY_SIZE / 256.0;
@@ -78,18 +106,39 @@ private:
 
   ImageInfo &get_near_image(color_t cp) {
     // クラスタの中で一番色が近い画像を求める
+    unsigned int min_used=max_use_count;
+    int min_len=std::numeric_limits<int>::max();
+    ImageInfo& min_image = dummy_image;
     int index = (int)(cp.x * color_step)
               + (int)(cp.y * color_step) * color_array_size
               + (int)(cp.z * color_step) * color_array_size_2;
-    int min_len=std::numeric_limits<int>::max();
-    ImageInfo& min_image = dummy_image;
 
-    for(ImageInfo& i : color_image_list_[index]) {
-      const color_t& p = i.color;
-      int len = (p.x-cp.x)*(p.x-cp.x) + (p.y-cp.y)*(p.y-cp.y) + (p.z-cp.z)*(p.z-cp.z);
-      if(len < min_len) {
-        min_image     = i;
-        min_len       = len;
+    if(select_mode == SELECT_MODE_RECYCLE) {
+      if(color_image_list_[index].size() == 1){
+        min_image = color_image_list_[index].at(0);
+      }else{
+        for(ImageInfo& i : color_image_list_[index]) {
+          const color_t& p = i.color;
+          int len = (p.x-cp.x)*(p.x-cp.x) + (p.y-cp.y)*(p.y-cp.y) + (p.z-cp.z)*(p.z-cp.z);
+          if(len < min_len) {
+            min_image     = i;
+            min_len       = len;
+          }
+        }
+      }
+    }else{
+      for(ImageInfo& i : color_image_list_[index]) {
+        const color_t& p = i.color;
+        int len = (p.x-cp.x)*(p.x-cp.x) + (p.y-cp.y)*(p.y-cp.y) + (p.z-cp.z)*(p.z-cp.z);
+        if(i.used < min_used || (i.used == min_used && len < min_len)) {
+          min_image     = i;
+          min_len       = len;
+          min_used      = i.used;
+        }
+      }
+
+      if(min_image == dummy_image) {
+        min_image = get_near_unused_image(cp);
       }
     }
 
@@ -107,6 +156,25 @@ private:
       if(len < min_len) {
         min_image     = i;
         min_len       = len;
+      }
+    }
+
+    return min_image;
+  }
+
+  ImageInfo& get_near_unused_image(color_t cp) {
+    // 一番色が近い未使用の画像を求める
+    int min_len=std::numeric_limits<int>::max();
+    ImageInfo& min_image = dummy_image;
+
+    for(ImageInfo& i : image_list_) {
+      if(i.used == 0){
+        const color_t& p = i.color;
+        int len = (p.x-cp.x)*(p.x-cp.x) + (p.y-cp.y)*(p.y-cp.y) + (p.z-cp.z)*(p.z-cp.z);
+        if(len < min_len) {
+          min_image     = i;
+          min_len       = len;
+        }
       }
     }
 
