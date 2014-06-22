@@ -24,9 +24,9 @@ int use_once_threshold = 4;
 
 void OutputDeviceWindow::output(cv::VideoCapture& in_video) {
   const std::string WIN_NAME = "mudou_win";
-  const int KEY_CODE_ESC = 1048603;
-  const int KEY_CODE_J   = 1048682;
-  const int KEY_CODE_K   = 1048683;
+  const int KEY_CODE_ESC = 27;
+  const int KEY_CODE_J   = 106;
+  const int KEY_CODE_K   = 107;
 
   cv::Mat image;
 
@@ -51,7 +51,7 @@ void OutputDeviceWindow::output(cv::VideoCapture& in_video) {
     cv::imshow(WIN_NAME, create_tiled_img(image, nim, icm));
     
     int key = cv::waitKey(1);
-    std::cout << "key = " << key << std::endl;
+    // std::cout << "key = " << key << std::endl;
     if( key == KEY_CODE_ESC ) {
       //break;
       return;
