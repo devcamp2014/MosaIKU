@@ -1,11 +1,21 @@
 #include "TiledImageCreator.h"
 
-int cell_width  = 100;
-int cell_height = 100;
+TiledImageCreator::TiledImageCreator() :
+  cell_width(100),
+  cell_height(100) {
 
-cv::Mat create_tiled_img(cv::Mat src_img, NearImageManager& nim, ImageCacheManager<cv::Mat, ImageLoader>& icm) {
+  std::cout << "begin load image" << std::endl;
+  nim.load("img");
+}
 
-  cv::Mat dst_img = cv::Mat::zeros(src_img.rows, src_img.cols, src_img.type());
+TiledImageCreator::~TiledImageCreator() {
+}
+
+cv::Mat TiledImageCreator::create_tiled_img(cv::Mat src_img) {
+
+  cv::Mat dst_img = cv::Mat::zeros(src_img.rows, 
+                                   src_img.cols, 
+                                   src_img.type());
 
   int es   = src_img.elemSize();
   int step = src_img.step;

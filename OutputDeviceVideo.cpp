@@ -1,18 +1,16 @@
 #include "OutputDeviceVideo.h"
 
-#include <boost/filesystem.hpp>
-
 #include "TiledImageCreator.h"
 
 OutputDeviceVideo::OutputDeviceVideo() {
-  std::cout << "begin load image" << std::endl;
-  nim.load("img");
 }
 
 OutputDeviceVideo::~OutputDeviceVideo() {
 }
 
 void OutputDeviceVideo::output(cv::VideoCapture& in_video) {
+
+  TiledImageCreator tic;
 
   cv::Mat image;
   in_video >> image;
@@ -24,7 +22,7 @@ void OutputDeviceVideo::output(cv::VideoCapture& in_video) {
 
   while(!image.empty()) {
 
-    out_video << create_tiled_img(image, nim, icm);
+    out_video << tic.create_tiled_img(image);
     
     in_video >> image;
   }

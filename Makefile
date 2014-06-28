@@ -8,7 +8,7 @@ CXXFLAGS = -Wall -O2 -std=c++0x
 LIBS     = -lopencv_core -lopencv_highgui -lopencv_imgproc -lboost_filesystem -lboost_system -lboost_program_options
 TARGET   = mudou
 
-SRC      := $(wildcard *.cpp)
+SRC      := $(filter-out flycheck_%,$(wildcard *.cpp))
 OBJECTS  := $(subst .cpp,.o,$(filter %.cpp,$(SRC)))
 DEP_FILE := $(OBJECTS:.o=.d)
 

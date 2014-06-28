@@ -9,24 +9,22 @@
 #include "TiledImageCreator.h"
 
 OutputDeviceWindow::OutputDeviceWindow() {
-  std::cout << "begin load image" << std::endl;
-  nim.load("img");
+  division = 1;
+  image_size = 0;
+  small_image_size = 0;
+  min_small_image_size = 5;
 }
 
 OutputDeviceWindow::~OutputDeviceWindow() {
 }
-
-int division = 1;
-int image_size = 0;
-int small_image_size = 0;
-int min_small_image_size = 5;
-int use_once_threshold = 4;
 
 void OutputDeviceWindow::output(cv::VideoCapture& in_video) {
   const std::string WIN_NAME = "mudou_win";
   const int KEY_CODE_ESC = 27;
   const int KEY_CODE_J   = 106;
   const int KEY_CODE_K   = 107;
+
+  TiledImageCreator tic;
 
   cv::Mat image;
 
@@ -43,12 +41,12 @@ void OutputDeviceWindow::output(cv::VideoCapture& in_video) {
     if(small_image_size < 1){
       small_image_size = 1;
     }
-    cell_width  = small_image_size;
-    cell_height = small_image_size;
+
+    tic.set_cell_size(small_image_size, small_image_size);
   }
 
   while(!image.empty()) {
-    cv::imshow(WIN_NAME, create_tiled_img(image, nim, icm));
+    cv::imshow(WIN_NAME, tic.create_tiled_img(image));
     
     int key = cv::waitKey(1);
     // std::cout << "key = " << key << std::endl;
@@ -66,12 +64,7 @@ void OutputDeviceWindow::output(cv::VideoCapture& in_video) {
         division--;
       }
 
-      cell_width  = small_image_size;
-      cell_height = small_image_size;
-      if(division >= use_once_threshold){
-        nim.set_recycle_mode(1);
-      }
-      icm.clear();
+      tic.set_cell_size(small_image_size, small_image_size);
     }
     if( key == KEY_CODE_K ) {
       // 部品画像を大きくする
@@ -81,13 +74,7 @@ void OutputDeviceWindow::output(cv::VideoCapture& in_video) {
       }
 
       small_image_size = image_size / (1 << division);
-      cell_width  = small_image_size;
-      cell_height = small_image_size;
-      if(division < use_once_threshold){
-        nim.set_recycle_mode(0);
-      }
-
-      icm.clear();
+      tic.set_cell_size(small_image_size, small_image_size);
     }
 
     in_video >> image;

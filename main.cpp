@@ -61,18 +61,17 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+    if(argmap.count("verify")) {
+      verify_image_files("img/","collapsed_img/");
+      return 0;
+    }
+
     if (argmap.count("help") ||
         !argmap.count("input") ||
         !argmap.count("output")) {
       std::cout << opt << std::endl;
       return 0;
     } 
-
-    if(argmap.count("verify")) {
-      verify_image_files("img/","collapsed_img/");
-      return 0;
-    }
-
     
   std::string input = argmap["input"].as<std::string>();
   cv::VideoCapture in_video;
