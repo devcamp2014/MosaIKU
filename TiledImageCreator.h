@@ -20,7 +20,7 @@ public:
     cell_width = w;
     cell_height = h;
 
-    if(80 > std::max(w, h)) {
+    if(30 >= std::max(w, h)) {
       nim.set_select_mode(NearImageManager::SELECT_MODE_RECYCLE);
     } else {
       nim.set_select_mode(NearImageManager::SELECT_MODE_USE_ONCE);
